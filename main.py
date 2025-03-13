@@ -27,6 +27,13 @@ logging.Formatter.converter = lambda *args: datetime.now(MSK).timetuple()
 
 load_dotenv()
 
+if firebase_json:
+    cred = credentials.Certificate(json.loads(firebase_json))
+    firebase_admin.initialize_app(cred)
+    print("Firebase подключен!")
+else:
+    print("Ошибка: FIREBASE_CREDENTIALS не найден!")
+
 cred = credentials.Certificate("firebase-adminsdk.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://crystal-stats-default-rtdb.firebaseio.com'
