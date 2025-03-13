@@ -10,6 +10,7 @@ import firebase_admin
 from firebase_admin import credentials, db
 from pytz import timezone
 import re
+import json
 
 MSK = timezone('Europe/Moscow')
 
@@ -27,17 +28,30 @@ logging.Formatter.converter = lambda *args: datetime.now(MSK).timetuple()
 
 load_dotenv()
 
-if firebase_json:
-    cred = credentials.Certificate(json.loads(firebase_json))
-    firebase_admin.initialize_app(cred)
-    print("Firebase подключен!")
-else:
-    print("Ошибка: FIREBASE_CREDENTIALS не найден!")
+# Получаем JSON-креденшелы из переменной окружения
+firebase_json = os.getenv('FIREBASE_CREDENTIALS')
 
-cred = credentials.Certificate("firebase-adminsdk.json")
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://crystal-stats-default-rtdb.firebaseio.com'
-})
+if firebase_json:
+    try:
+        # Парсим JSON из строки, полученной из переменной окружения
+        cred = credentials.Certificate(json.loads(firebase_json))
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': 'https://crystal-stats-default-rtdb.firebaseio.com'
+        })
+        print("Firebase подключен!")
+    except Exception as e:
+        print(f"Ошибка при подключении к Firebase: {e}")
+else:
+    # Если переменной окружения нет, пытаемся использовать локальный файл
+    try:
+        cred = credentials.Certificate("firebase-adminsdk.json")
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': 'https://crystal-stats-default-rtdb.firebaseio.com'
+        })
+        print("Firebase подключен через локальный файл!")
+    except Exception as e:
+        print(f"Ошибка: FIREBASE_CREDENTIALS не найден и локальный файл недоступен! {e}")
+
 db_ref = db.reference()
 
 intents = discord.Intents.default()
