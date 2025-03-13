@@ -1,1 +1,1 @@
-echo "worker: python main.py" > Procfile
+web: python main.py
